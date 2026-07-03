@@ -22,37 +22,37 @@ VALID_RANGES = {
   'mean symmetry':         (0.10,  0.32),
   'mean fractal dimension':(0.04,  0.10),
 }
+import pandas as pd
 
-def build_full_input_vector(user_inputs: dict,
-                             se_worst_means: dict,
-                             all_feature_names: list,
-                             scaler) -> np.ndarray:
-  """
-  Takes 10 mean feature values from the user form.
-  Fills indices 10–29 (SE and worst features) with their 
-  standardized training-set mean values (effectively 0 after 
-  standardization — these are pre-standardized means).
-  Returns a scaled (1, 30) numpy array for model.predict().
-  """
-  # Build raw (un-scaled) row for mean features only
-  # The scaler was fit on all 30 — we need to invert for the SE/worst
-  # Strategy: pass mean features through scaler, fill SE/worst 
-  # with their post-standardization mean (0.0) directly.
-  
-  mean_values = np.array([
-    float(user_inputs[feat]) for feat in MEAN_FEATURE_NAMES
-  ]).reshape(1, -1)
+def build_full_input_vector(user_inputs, se_worst_means,
+                            all_feature_names, scaler):
 
-  # Scale the 10 mean features using the full 30-feature scaler
-  # by temporarily building a 30-feature row where SE/worst = 
-  # their un-scaled training means (scaler.mean_[10:])
-  full_raw = np.concatenate([
-    mean_values[0],
-    scaler.mean_[10:]   # un-scaled means for features 10–29
-  ]).reshape(1, -1)
+    print("BUILD 1")
 
-  return scaler.transform(full_raw)
+    mean_values = np.array([
+        float(user_inputs[feat])
+        for feat in MEAN_FEATURE_NAMES
+    ])
 
+    print("BUILD 2")
+
+    full_raw = np.concatenate([
+        mean_values,
+        scaler.mean_[10:]
+    ])
+
+    print("BUILD 3")
+    print(full_raw.shape)
+
+    df = pd.DataFrame([full_raw], columns=all_feature_names)
+
+    print("BUILD 4")
+
+    X = scaler.transform(df)
+
+    print("BUILD 5")
+
+    return X
 def predict(user_inputs, model, scaler,
             all_feature_names,
             se_worst_means):
@@ -82,7 +82,12 @@ def predict(user_inputs, model, scaler,
     confidence = round(float(np.max(prediction_proba[0])) * 100, 1)
 
     result_label = "Benign" if pred_label == 1 else "Malignant"
+    print("X =", X)
+    print("Shape =", X.shape)
 
+    prediction_proba = model.predict(X, verbose=0)
+
+    print("Prediction =", prediction_proba)
     return {
         "result": result_label,
         "confidence": confidence,
@@ -91,3 +96,4 @@ def predict(user_inputs, model, scaler,
         "disclaimer":
             "This is an educational ML demonstration and does NOT constitute medical advice."
     }
+    
