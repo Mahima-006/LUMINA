@@ -53,29 +53,41 @@ def build_full_input_vector(user_inputs: dict,
 
   return scaler.transform(full_raw)
 
-def predict(user_inputs: dict, model, scaler,
-            all_feature_names: list,
-            se_worst_means: dict) -> dict:
+def predict(user_inputs, model, scaler,
+            all_feature_names,
+            se_worst_means):
 
-  X = build_full_input_vector(
-    user_inputs, se_worst_means, all_feature_names, scaler
-  )
-  prediction_proba = model.predict(X, verbose=0)   # shape (1, 2)
-  pred_label = int(np.argmax(prediction_proba[0]))
-
-  benign_prob    = round(float(prediction_proba[0][1]) * 100, 1)
-  malignant_prob = round(float(prediction_proba[0][0]) * 100, 1)
-  confidence     = round(float(np.max(prediction_proba[0])) * 100, 1)
-  result_label   = "Benign" if pred_label == 1 else "Malignant"
-
-  return {
-    "result": result_label,
-    "confidence": confidence,
-    "benign_probability": benign_prob,
-    "malignant_probability": malignant_prob,
-    "disclaimer": (
-      "This is an educational ML demonstration and does NOT "
-      "constitute medical advice. Consult a licensed medical "
-      "professional for any health concerns."
+    print("STEP 1")
+    X = build_full_input_vector(
+        user_inputs,
+        se_worst_means,
+        all_feature_names,
+        scaler,
     )
-  }
+
+    print("STEP 2")
+    print(X)
+
+    prediction_proba = model.predict(X, verbose=0)
+
+    print("STEP 3")
+    print(prediction_proba)
+
+    pred_label = int(np.argmax(prediction_proba[0]))
+
+    print("STEP 4")
+
+    benign_prob = round(float(prediction_proba[0][1]) * 100, 1)
+    malignant_prob = round(float(prediction_proba[0][0]) * 100, 1)
+    confidence = round(float(np.max(prediction_proba[0])) * 100, 1)
+
+    result_label = "Benign" if pred_label == 1 else "Malignant"
+
+    return {
+        "result": result_label,
+        "confidence": confidence,
+        "benign_probability": benign_prob,
+        "malignant_probability": malignant_prob,
+        "disclaimer":
+            "This is an educational ML demonstration and does NOT constitute medical advice."
+    }

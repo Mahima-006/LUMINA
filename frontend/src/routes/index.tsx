@@ -158,8 +158,8 @@ function Lumina() {
   }, []);
 
   const allFilled = useMemo(
-      () => FEATURES.every((f) => values[f.key].trim() !== ""),
-      [values],
+        () => FEATURES.every((f) => values[f.key].trim() !== ""),
+        [values],
     );
 
   const handleChange = (key: FeatureKey, v: string) => {
